@@ -1,7 +1,6 @@
 """Wrapper around FAISS vector database."""
 from __future__ import annotations
 
-import os
 import math
 import pickle
 import uuid
@@ -18,24 +17,16 @@ from langchain.vectorstores.base import VectorStore
 from langchain.vectorstores.utils import maximal_marginal_relevance
 
 
-def dependable_faiss_import(no_avx2: Optional[bool] = None) -> Any:
+def dependable_faiss_import() -> Any:
     """
     Import faiss if available, otherwise raise error.
-    If FAISS_NO_AVX2 environment variable is set, it will be considered
-    to load FAISS with no AVX2 optimization.
-
-    Args:
-        no_avx2: Load FAISS strictly with no AVX2 optimization
-            so that the vectorstore is portable and compatible with other devices.
+    If you want to load FAISS with no AVX2 optimization,
+    you can set FAISS_DISABLE_CPU_FEATURES environment variable to "AVX2".
+    Though only works if installed Numpy version is >= 1.19 (numpy/numpy#18058).
     """
-    if no_avx2 is None and 'FAISS_NO_AVX2' in os.environ:
-        no_avx2 = bool(os.getenv('FAISS_NO_AVX2'))
 
     try:
-        if no_avx2:
-            from faiss import swigfaiss as faiss
-        else:
-            import faiss
+        import faiss
     except ImportError:
         raise ValueError(
             "Could not import faiss python package. "
